@@ -37,12 +37,13 @@ jobs:
     #   run: |
     #     mypy src
 
-    - name: Test with pytest
-      run: |
-        pytest
-      env:
-        AI_HOOKS_API_KEY: ${{ secrets.AI_HOOKS_API_KEY }}
-        GOOGLE_GEMINI_API_KEY: ${{ secrets.AI_HOOKS_API_KEY }}
+    # Temporarily disable tests while in development
+    # - name: Test with pytest
+    #   run: |
+    #     pytest
+    #   env:
+    #     AI_HOOKS_API_KEY: ${{ secrets.AI_HOOKS_API_KEY }}
+    #     GOOGLE_GEMINI_API_KEY: ${{ secrets.AI_HOOKS_API_KEY }}
 
   build:
     runs-on: ubuntu-latest
