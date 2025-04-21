@@ -7,7 +7,7 @@ pre-commit hook configurations based on codebase analysis.
 import json
 import os
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 import google.generativeai as genai
 from dotenv import load_dotenv
@@ -27,7 +27,7 @@ class AIClient:
         """
         self.logger = get_logger("ai_client")
         self.logger.info("Initializing AI client")
-        
+
         # Load environment variables from .env file
         self.logger.debug("Loading environment variables from .env file")
         load_dotenv()
@@ -58,20 +58,20 @@ class AIClient:
             A dictionary containing the generated pre-commit configuration.
         """
         self.logger.info("Generating pre-commit configuration based on analysis results")
-        
+
         self.logger.debug("Creating prompt for AI service")
         prompt = self._create_prompt(analysis_results)
-        
+
         self.logger.debug("Calling AI service")
         start_time = time.time()
         response = self._call_ai_service(prompt)
         elapsed_time = time.time() - start_time
         self.logger.debug(f"AI service call completed in {elapsed_time:.2f} seconds")
-        
+
         self.logger.debug("Parsing API response")
         result = self._parse_response(response)
         self.logger.info("Pre-commit configuration generated successfully")
-        
+
         return result
 
     def _create_prompt(self, analysis_results: Dict[str, Any]) -> str:
@@ -125,14 +125,15 @@ class AIClient:
         Raises:
             Exception: If the API call fails.
         """
-        self.logger.trace(f"Sending prompt to AI service: {prompt[:100]}...")
-        
+        self.logger.trace(f"Sending prompt to AI service: {prompt[:100]}...")  # type: ignore
+
         try:
             self.logger.debug("Making API request to Gemini")
             response = self.model.generate_content(prompt)
             self.logger.debug("Received response from AI service")
-            self.logger.trace(f"Raw response: {response.text[:100]}...")
-            return response.text
+            self.logger.trace(f"Raw response: {response.text[:100]}...")  # type: ignore
+            # Explicitly cast to str to satisfy mypy
+            return str(response.text)
         except Exception as e:
             error_msg = f"Failed to call AI service: {str(e)}"
             self.logger.error(error_msg)
@@ -155,8 +156,8 @@ class AIClient:
         try:
             # Clean up the response to extract just the YAML content
             yaml_content = response.strip()
-            self.logger.trace(f"Initial response length: {len(yaml_content)} characters")
-            
+            self.logger.trace(f"Initial response length: {len(yaml_content)} characters")  # type: ignore
+
             # If the response is wrapped in code blocks, extract just the content
             if yaml_content.startswith("```yaml"):
                 self.logger.debug("Detected ```yaml code block, extracting content")
@@ -167,11 +168,11 @@ class AIClient:
             if yaml_content.endswith("```"):
                 self.logger.debug("Detected trailing ``` code block, removing it")
                 yaml_content = yaml_content.rsplit("```", 1)[0]
-                
+
             yaml_content = yaml_content.strip()
             self.logger.debug(f"Extracted YAML content length: {len(yaml_content)} characters")
-            self.logger.trace(f"YAML content starts with: {yaml_content[:50]}...")
-            
+            self.logger.trace(f"YAML content starts with: {yaml_content[:50]}...")  # type: ignore
+
             result = {
                 "yaml_content": yaml_content,
                 "raw_response": response

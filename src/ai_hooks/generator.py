@@ -4,14 +4,11 @@ This module generates pre-commit hook configurations based on codebase analysis
 and AI-powered responses.
 """
 
-import os
 import subprocess
-import sys
 import time
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, Optional
 
-import yaml
 
 from ai_hooks.analyzer import analyze_codebase
 from ai_hooks.ai_client import generate_precommit_config

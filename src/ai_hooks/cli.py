@@ -1,9 +1,7 @@
 """Command-line interface for the AI Hooks."""
 
-import os
 import sys
 import time
-from pathlib import Path
 from typing import Optional
 
 import click

@@ -27,23 +27,20 @@ jobs:
         python -m pip install hatch
         python -m pip install -e .[dev]
 
-    # Temporarily disable flake8 checks while in development
-    # - name: Lint with flake8
-    #   run: |
-    #     flake8 src tests
+    - name: Lint with flake8
+      run: |
+        flake8 src tests
 
-    # Temporarily disable mypy checks while in development
-    # - name: Check types with mypy
-    #   run: |
-    #     mypy src
+    - name: Check types with mypy
+      run: |
+        mypy src
 
-    # Temporarily disable tests while in development
-    # - name: Test with pytest
-    #   run: |
-    #     pytest
-    #   env:
-    #     AI_HOOKS_API_KEY: ${{ secrets.AI_HOOKS_API_KEY }}
-    #     GOOGLE_GEMINI_API_KEY: ${{ secrets.AI_HOOKS_API_KEY }}
+    - name: Test with pytest
+      run: |
+        pytest
+      env:
+        AI_HOOKS_API_KEY: ${{ secrets.AI_HOOKS_API_KEY }}
+        GOOGLE_GEMINI_API_KEY: ${{ secrets.AI_HOOKS_API_KEY }}
 
   build:
     runs-on: ubuntu-latest

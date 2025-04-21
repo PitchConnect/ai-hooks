@@ -4,21 +4,24 @@ import logging
 import os
 import sys
 from pathlib import Path
-from typing import Optional, Union
+from typing import Any, Optional, Union
 
 # Define log levels with more descriptive names
 TRACE = 5  # More detailed than DEBUG
 logging.addLevelName(TRACE, "TRACE")
 
 
-def trace(self, message, *args, **kwargs):
+def trace(
+    self: logging.Logger, message: object, *args: Any, **kwargs: Any
+) -> None:
     """Log a message with TRACE level."""
     if self.isEnabledFor(TRACE):
         self._log(TRACE, message, args, **kwargs)
 
 
 # Add trace method to Logger class
-logging.Logger.trace = trace
+# Using type ignore to tell mypy that we're modifying the Logger class
+setattr(logging.Logger, 'trace', trace)  # type: ignore
 
 
 class LogFormatter(logging.Formatter):
@@ -34,13 +37,16 @@ class LogFormatter(logging.Formatter):
         "RESET": "\033[0m",      # Reset
     }
 
-    def format(self, record):
+    def format(self, record: logging.LogRecord) -> str:
         """Format the log record with colors for console output."""
         log_message = super().format(record)
-        if sys.stdout.isatty():  # Only use colors when outputting to a terminal
+        # Only use colors when outputting to a terminal
+        if sys.stdout.isatty():
             level_name = record.levelname
             if level_name in self.COLORS:
-                log_message = f"{self.COLORS[level_name]}{log_message}{self.COLORS['RESET']}"
+                color = self.COLORS[level_name]
+                reset = self.COLORS['RESET']
+                log_message = f"{color}{log_message}{reset}"
         return log_message
 
 
@@ -74,7 +80,9 @@ def setup_logging(
         datefmt="%H:%M:%S",
     )
     file_formatter = logging.Formatter(
-        "%(asctime)s [%(levelname)s] %(name)s (%(filename)s:%(lineno)d): %(message)s",
+        "%(asctime)s [%(levelname)s] %(name)s "
+        "(%(filename)s:%(lineno)d): "
+        "%(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
     )
 
@@ -113,15 +121,14 @@ def get_logger(name: Optional[str] = None) -> logging.Logger:
 
     logger = logging.getLogger(logger_name)
 
-    # If the root logger doesn't have handlers, set up logging with default settings
+    # If the root logger doesn't have handlers, set up logging with defaults
     root_logger = logging.getLogger("ai_hooks")
     if not root_logger.handlers:
         # Get log level from environment variable or use INFO as default
         log_level = os.environ.get("AI_HOOKS_LOG_LEVEL", "INFO")
-        
+
         # Get log file from environment variable or use None as default
         log_file = os.environ.get("AI_HOOKS_LOG_FILE")
-        
         setup_logging(level=log_level, log_file=log_file)
 
     return logger

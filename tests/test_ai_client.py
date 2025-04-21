@@ -1,6 +1,5 @@
 """Tests for the AI client module."""
 
-import json
 import os
 from unittest import mock
 
@@ -62,9 +61,9 @@ def test_create_prompt():
         "existing_configs": {"pre-commit": "/path/to/.pre-commit-config.yaml"},
         "ci_workflows": ["/path/to/.github/workflows/ci.yml"],
     }
-    
+
     prompt = client._create_prompt(analysis_results)
-    
+
     assert "File extensions: py, md" in prompt
     assert "Programming languages: python, markdown" in prompt
     assert "Python dependencies: requests, flask" in prompt
@@ -76,10 +75,10 @@ def test_create_prompt():
 def test_call_ai_service(mock_generate_content, mock_gemini_response):
     """Test that _call_ai_service calls the Gemini API and returns the response."""
     mock_generate_content.return_value = mock_gemini_response
-    
+
     client = AIClient(api_key="test_api_key")
     response = client._call_ai_service("test prompt")
-    
+
     mock_generate_content.assert_called_once_with("test prompt")
     assert "```yaml" in response
     assert "pre-commit-hooks" in response
@@ -89,11 +88,11 @@ def test_call_ai_service(mock_generate_content, mock_gemini_response):
 def test_call_ai_service_error(mock_generate_content):
     """Test that _call_ai_service handles errors correctly."""
     mock_generate_content.side_effect = Exception("API error")
-    
+
     client = AIClient(api_key="test_api_key")
     with pytest.raises(Exception) as excinfo:
         client._call_ai_service("test prompt")
-    
+
     assert "Failed to call AI service" in str(excinfo.value)
 
 
@@ -107,9 +106,9 @@ repos:
     hooks:
     -   id: trailing-whitespace
 ```"""
-    
+
     result = client._parse_response(response)
-    
+
     assert "yaml_content" in result
     assert "raw_response" in result
     assert "pre-commit-hooks" in result["yaml_content"]
@@ -121,9 +120,9 @@ repos:
 def test_generate_precommit_config(mock_generate_precommit_config):
     """Test that generate_precommit_config creates a client and calls generate_precommit_config."""
     mock_generate_precommit_config.return_value = {"yaml_content": "test content"}
-    
+
     analysis_results = {"test": "data"}
     result = generate_precommit_config(analysis_results, api_key="test_api_key")
-    
+
     mock_generate_precommit_config.assert_called_once_with(analysis_results)
     assert result == {"yaml_content": "test content"}
