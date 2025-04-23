@@ -72,3 +72,8 @@ jobs:
       with:
         name: dist
         path: dist/
+
+    - name: Mark build as successful
+      run: |
+        echo "Build completed successfully. Artifacts are available for download."
+        echo "No deployment step configured yet."
