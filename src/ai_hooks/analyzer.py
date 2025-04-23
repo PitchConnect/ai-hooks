@@ -7,7 +7,7 @@ and existing configurations to inform the generation of pre-commit hooks.
 import os
 import re
 from pathlib import Path
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Set
 
 from ai_hooks.logging import get_logger
 
@@ -30,7 +30,7 @@ class CodebaseAnalyzer:
         self.existing_configs: Dict[str, Path] = {}
         self.ci_workflows: List[Path] = []
 
-    def analyze(self) -> Dict[str, object]:
+    def analyze(self) -> Dict[str, Any]:
         """Analyze the codebase and return the results.
 
         Returns:
@@ -53,7 +53,7 @@ class CodebaseAnalyzer:
         self.logger.debug("Finding CI/CD workflows")
         self._find_ci_workflows()
 
-        results = {
+        results: Dict[str, Any] = {
             "file_extensions": sorted(list(self.file_extensions)),
             "languages": sorted(list(self.languages)),
             "python_dependencies": sorted(list(self.python_dependencies)),
@@ -61,36 +61,38 @@ class CodebaseAnalyzer:
             "ci_workflows": [str(p) for p in self.ci_workflows],
         }
 
-        self.logger.info(f"Analysis complete. Found {len(self.file_extensions)} file extensions, "
-                      f"{len(self.languages)} languages, {len(self.python_dependencies)} Python dependencies, "
-                      f"{len(self.existing_configs)} existing configs, and {len(self.ci_workflows)} CI workflows")
+        self.logger.info(
+            f"Analysis complete. Found {len(self.file_extensions)} file extensions, "
+            f"{len(self.languages)} languages, {len(self.python_dependencies)} Python dependencies, "
+            f"{len(self.existing_configs)} existing configs, and {len(self.ci_workflows)} CI workflows"
+        )
         self.logger.debug(f"Analysis results: {results}")
 
         return results
 
     def _find_file_extensions(self) -> None:
         """Find all file extensions in the repository."""
-        self.logger.trace(f"Walking directory tree starting at {self.repo_path}")
+        self.logger.trace(f"Walking directory tree starting at {self.repo_path}")  # type: ignore
         for root, _, files in os.walk(self.repo_path):
             # Skip hidden directories and virtual environments
             if any(
-                part.startswith(".")
-                or part in ("venv", ".venv", "env", "node_modules", "__pycache__")
+                (part.startswith(".")
+                 or part in ("venv", ".venv", "env", "node_modules", "__pycache__"))
                 for part in Path(root).parts
             ):
-                self.logger.trace(f"Skipping directory {root}")
+                self.logger.trace(f"Skipping directory {root}")  # type: ignore
                 continue
 
-            self.logger.trace(f"Processing {len(files)} files in {root}")
+            self.logger.trace(f"Processing {len(files)} files in {root}")  # type: ignore
             for file in files:
                 # Skip hidden files
                 if file.startswith("."):
-                    self.logger.trace(f"Skipping hidden file {file}")
+                    self.logger.trace(f"Skipping hidden file {file}")  # type: ignore
                     continue
 
                 ext = os.path.splitext(file)[1].lower()
                 if ext:
-                    self.logger.trace(f"Found file extension: {ext[1:]} in file {file}")
+                    self.logger.trace(f"Found file extension: {ext[1:]} in file {file}")  # type: ignore
                     self.file_extensions.add(ext[1:])  # Remove the leading dot
 
     def _detect_languages(self) -> None:

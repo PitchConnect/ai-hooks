@@ -29,7 +29,7 @@ repos:
     rev: v1.3.0
     hooks:
     -   id: mypy
-        additional_dependencies: [types-requests, types-PyYAML]
+        additional_dependencies: [types-requests, types-PyYAML, pydantic<2.0.0]
 
 -   repo: https://github.com/python-poetry/poetry
     rev: 1.5.1

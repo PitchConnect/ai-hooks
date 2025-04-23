@@ -1,10 +1,9 @@
 """Utility functions for the AI Hooks."""
 
-import os
 import subprocess
 import sys
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Union
+from typing import List, Optional, Union
 
 
 def is_git_repository(path: str = ".") -> bool:
@@ -36,7 +35,8 @@ def get_git_root(path: str = ".") -> Optional[str]:
         path: Path to start from. Defaults to current directory.
 
     Returns:
-        The root directory of the git repository, or None if not in a git repository.
+        The root directory of the git repository, or None if not in a git
+        repository.
     """
     try:
         result = subprocess.run(
@@ -112,7 +112,7 @@ def backup_file(file_path: Union[str, Path]) -> Optional[str]:
         return None
 
 
-def check_doc_freshness(repo_path: str = ".") -> List[str]:
+def check_doc_freshness(repo_path: Union[str, Path] = ".") -> List[str]:
     """Check if documentation files are up-to-date.
 
     This function checks if README.md and other documentation files
@@ -124,27 +124,32 @@ def check_doc_freshness(repo_path: str = ".") -> List[str]:
     Returns:
         A list of documentation files that need to be updated.
     """
-    repo_path = Path(repo_path)
+    repo_path_obj = Path(repo_path)
     outdated_docs = []
 
     # Check if README.md exists
-    readme_path = repo_path / "README.md"
+    readme_path = repo_path_obj / "README.md"
     if not readme_path.exists():
         outdated_docs.append(str(readme_path))
         return outdated_docs
 
     # Check README.md modification time against code files
     readme_mtime = readme_path.stat().st_mtime
-    code_files = []
+    code_files: List[Path] = []
 
     # Find code files
-    for ext in [".py", ".js", ".ts", ".java", ".go", ".rb", ".php", ".c", ".cpp", ".h", ".hpp"]:
-        code_files.extend(repo_path.glob(f"**/*{ext}"))
+    code_extensions = [
+        ".py", ".js", ".ts", ".java", ".go", ".rb", ".php",
+        ".c", ".cpp", ".h", ".hpp"
+    ]
+    for ext in code_extensions:
+        code_files.extend(repo_path_obj.glob(f"**/*{ext}"))
 
     # Filter out files in certain directories
+    excluded_dirs = [".git", "venv", ".venv", "node_modules", "__pycache__"]
     code_files = [
         f for f in code_files
-        if not any(part in f.parts for part in [".git", "venv", ".venv", "node_modules", "__pycache__"])
+        if not any(part in f.parts for part in excluded_dirs)
     ]
 
     # Check if any code file is newer than README.md
@@ -154,7 +159,11 @@ def check_doc_freshness(repo_path: str = ".") -> List[str]:
             break
 
     # Check other documentation files
-    doc_dirs = [repo_path / "docs", repo_path / "doc", repo_path / "documentation"]
+    doc_dirs = [
+        repo_path_obj / "docs",
+        repo_path_obj / "doc",
+        repo_path_obj / "documentation"
+    ]
     for doc_dir in doc_dirs:
         if not doc_dir.exists() or not doc_dir.is_dir():
             continue
